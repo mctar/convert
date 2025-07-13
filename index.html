@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convert Bot – Butter Bot</title>
+  <!-- Dark theme + disagree.btrbot.com vibe -->
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color-scheme: dark;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 25% 20%, #1e1e1e 0%, #121212 100%);
+      color: #f6f6f6;
+    }
+    /* Header */
+    .header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid #2a2a2a;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(3px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header img {
+      height: 36px;
+    }
+    /* Layout */
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 3rem 1rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      text-align: center;
+    }
+    h1 {font-size: 2rem;margin: 0;}
+    input[type="number"] {
+      font-size: 1.75rem;
+      padding: 0.5rem 0.9rem;
+      width: 100%;
+      max-width: 280px;
+      text-align: center;
+      border: 1px solid #333;
+      border-radius: 0.5rem;
+      background: #1b1b1b;
+      color: #fafafa;
+    }
+    input:focus {outline: 2px solid #3b82f6;outline-offset: 2px;}
+    .group {width: 100%;display: grid;grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));gap: 1rem;}
+    .card {padding: 1.25rem;border-radius: 1rem;background: #1c1c1c;box-shadow: 0 4px 12px rgba(0,0,0,0.35);}    .card h2{font-size:1.15rem;margin:0 0 0.25rem;font-weight:600;color:#e5e5e5;}
+    .value{font-size:1.6rem;font-weight:700;color:#fafafa;}
+    /* Footer */
+    footer{width:100%;position:fixed;bottom:0;left:0;right:0;padding:0.85rem 0;border-top:1px solid #2a2a2a;background:rgba(0,0,0,0.25);backdrop-filter:blur(3px);font-size:0.85rem;text-align:center;color:#999;}    footer a{color:#999;}footer a:hover{color:#fff;}
+  </style>
+</head>
+<body>
+  <!-- Gervi header logo -->
+  <header class="header">
+    <img src="assets/logo.png" alt="Gervi logo" loading="lazy" />
+  </header>
+
+  <main>
+    <h1>Convert Bot</h1>
+    <p>Enter a number to instantly see common <strong>temperature, weight &amp; length</strong> conversions (rounded to one decimal).</p>
+
+    <input id="inputNumber" type="number" inputmode="decimal" step="any" placeholder="42" />
+
+    <!-- Temperature -->
+    <section class="group" aria-label="Temperature conversions">
+      <div class="card"><h2><span id="cVal">--</span> °C → °F</h2><div class="value" id="cToF">--</div></div>
+      <div class="card"><h2><span id="fVal">--</span> °F → °C</h2><div class="value" id="fToC">--</div></div>
+    </section>
+
+    <!-- Weight -->
+    <section class="group" aria-label="Weight conversions">
+      <div class="card"><h2><span id="ozVal">--</span> oz → g</h2><div class="value" id="ozToG">--</div></div>
+      <div class="card"><h2><span id="gVal">--</span> g → oz</h2><div class="value" id="gToOz">--</div></div>
+      <div class="card"><h2><span id="lbVal">--</span> lb → kg</h2><div class="value" id="lbToKg">--</div></div>
+      <div class="card"><h2><span id="kgVal">--</span> kg → lb</h2><div class="value" id="kgToLb">--</div></div>
+    </section>
+
+    <!-- Length -->
+    <section class="group" aria-label="Length conversions">
+      <div class="card"><h2><span id="inVal">--</span> in → cm</h2><div class="value" id="inToCm">--</div></div>
+      <div class="card"><h2><span id="cmVal">--</span> cm → in</h2><div class="value" id="cmToIn">--</div></div>
+      <div class="card"><h2><span id="mVal">--</span> m → ft</h2><div class="value" id="mToFt">--</div></div>
+      <div class="card"><h2><span id="ftVal">--</span> ft → m</h2><div class="value" id="ftToM">--</div></div>
+    </section>
+  </main>
+
+  <footer>
+    A butter-bot by <a href="https://btrbot.com" target="_blank" rel="noopener">btrbot.com</a>
+  </footer>
+
+  <!-- Conversion logic -->
+  <script>
+    const input = document.getElementById('inputNumber');
+    const el = id => document.getElementById(id);
+    const round = n => isNaN(n) ? '--' : (+n.toFixed(1)).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+
+    const update = () => {
+      const n = parseFloat(input.value);
+      const labelIds=['cVal','fVal','ozVal','gVal','lbVal','kgVal','inVal','cmVal','mVal','ftVal'];
+      const valueIds=['cToF','fToC','ozToG','gToOz','lbToKg','kgToLb','inToCm','cmToIn','mToFt','ftToM'];
+      if(isNaN(n)){[...labelIds,...valueIds].forEach(id=>el(id).textContent='--');return;}
+      labelIds.forEach(id=>el(id).textContent=n);
+      el('cToF').textContent=round((n*9/5)+32);
+      el('fToC').textContent=round((n-32)*5/9);
+      const GRAMS_PER_OUNCE=28.349523125;
+      const KG_PER_POUND=0.45359237;
+      el('ozToG').textContent=round(n*GRAMS_PER_OUNCE);
+      el('gToOz').textContent=round(n/GRAMS_PER_OUNCE);
+      el('lbToKg').textContent=round(n*KG_PER_POUND);
+      el('kgToLb').textContent=round(n/KG_PER_POUND);
+      const CM_PER_INCH=2.54;
+      const M_PER_FOOT=0.3048;
+      el('inToCm').textContent=round(n*CM_PER_INCH);
+      el('cmToIn').textContent=round(n/CM_PER_INCH);
+      el('ftToM').textContent=round(n*M_PER_FOOT);
+      el('mToFt').textContent=round(n/M_PER_FOOT);
+    };
+    input.addEventListener('input',update);
+  </script>
+</body>
+</html>
